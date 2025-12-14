@@ -45,7 +45,6 @@ interface MaskEditorProps {
 type Tool = 'brush' | 'eraser';
 
 export default function MaskEditor({ imageFile, onProcess, onCancel }: MaskEditorProps) {
-  const { t } = useTranslation();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const maskCanvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
