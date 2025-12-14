@@ -11,11 +11,7 @@ import {
   Stack,
   Chip,
   Tooltip,
-  Slider,
   Divider,
-  ToggleButtonGroup,
-  ToggleButton,
-  alpha,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
