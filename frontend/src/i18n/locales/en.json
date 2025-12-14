@@ -1,0 +1,32 @@
+{
+  "app": {
+    "title": "Maliaka",
+    "subtitle": "Transform children's drawings into beautiful SVG vectors"
+  },
+  "upload": {
+    "title": "Upload a Drawing",
+    "subtitle": "Take a photo or upload an image of a child's drawing",
+    "button": "Choose Image",
+    "camera": "Take Photo",
+    "processing": "Processing..."
+  },
+  "result": {
+    "title": "Your Vectorized Drawing",
+    "download": "Download SVG",
+    "preview": "T-shirt Preview",
+    "error": "Something went wrong",
+    "retry": "Try Again"
+  },
+  "mockup": {
+    "title": "See it on a T-shirt",
+    "description": "Preview how the drawing looks on clothing"
+  },
+  "errors": {
+    "noFile": "Please select an image file",
+    "invalidFile": "Invalid file type. Please use JPEG, PNG, or WebP",
+    "tooLarge": "File is too large. Maximum size is 10MB",
+    "processingFailed": "Failed to process image. Please try again.",
+    "networkError": "Network error. Please check your connection."
+  }
+}
+

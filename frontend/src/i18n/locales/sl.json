@@ -1,0 +1,32 @@
+{
+  "app": {
+    "title": "Maliaka",
+    "subtitle": "Spremenite otroške risbe v lepe SVG vektorje"
+  },
+  "upload": {
+    "title": "Naložite risbo",
+    "subtitle": "Posnemite fotografijo ali naložite sliko otroške risbe",
+    "button": "Izberi sliko",
+    "camera": "Posneti fotografijo",
+    "processing": "Obdelava..."
+  },
+  "result": {
+    "title": "Vaša vektorizirana risba",
+    "download": "Prenesi SVG",
+    "preview": "Predogled na majici",
+    "error": "Nekaj je šlo narobe",
+    "retry": "Poskusi znova"
+  },
+  "mockup": {
+    "title": "Oglejte si na majici",
+    "description": "Predogled, kako risba izgleda na oblačilih"
+  },
+  "errors": {
+    "noFile": "Prosimo, izberite slikovno datoteko",
+    "invalidFile": "Neveljavna vrsta datoteke. Prosimo, uporabite JPEG, PNG ali WebP",
+    "tooLarge": "Datoteka je prevelika. Največja velikost je 10MB",
+    "processingFailed": "Obdelava slike ni uspela. Prosimo, poskusite znova.",
+    "networkError": "Napaka omrežja. Prosimo, preverite povezavo."
+  }
+}
+

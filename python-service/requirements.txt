@@ -1,0 +1,12 @@
+flask==3.0.0
+flask-cors==4.0.0
+pillow>=10.2.0
+opencv-python>=4.8.0
+numpy>=1.24.0
+scikit-learn>=1.3.0
+scikit-image>=0.21.0
+rembg>=2.0.0
+python-dotenv==1.0.0
+werkzeug==3.0.1
+# Note: Potrace must be installed system-wide (brew install potrace)
+
