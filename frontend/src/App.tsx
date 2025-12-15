@@ -11,6 +11,7 @@ import {
   Snackbar,
   Alert,
   Fade,
+  Link,
 } from '@mui/material';
 import Upload from './components/Upload';
 import Result from './components/Result';
@@ -224,6 +225,32 @@ function App() {
           </Box>
         </Fade>
       </Container>
+
+      {/* Footer */}
+      <Box
+        sx={{
+          mt: 4,
+          pb: 3,
+          color: 'rgba(255,255,255,0.85)',
+          textAlign: 'center',
+        }}
+      >
+        <Typography variant="body2">
+          Day I. Vibe coding marathon.
+        </Typography>
+        <Typography variant="body2" sx={{ mt: 0.5 }}>
+          Author{' '}
+          <Link
+            href="https://www.linkedin.com/in/mparfeniuk/"
+            target="_blank"
+            rel="noopener noreferrer"
+            color="inherit"
+            underline="always"
+          >
+            Max Parfeniuk
+          </Link>
+        </Typography>
+      </Box>
 
       {/* Error Snackbar */}
       <Snackbar
