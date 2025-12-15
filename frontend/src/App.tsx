@@ -190,17 +190,22 @@ function App() {
           <div
             className="w-full rounded-lg border shadow-sm"
             style={{
-              backgroundColor: "#fff3b0",
-              borderColor: "#e5b700",
-              color: "#000",
+              backgroundColor: "rgba(255, 243, 176, 0.75)",
+              borderColor: "#e8dd7a",
+              color: "#1a1a1a",
+              boxShadow: "0 4px 10px rgba(0,0,0,0.04)",
             }}
           >
             <div className="flex items-start justify-between gap-2 px-3 py-2">
               <div className="flex items-center gap-2">
                 <Typography
-                  variant="subtitle2"
+                  variant="body2"
                   component="div"
-                  sx={{ fontFamily: "Arial, sans-serif", fontWeight: 700 }}
+                  sx={{ 
+                    fontFamily: "Arial, sans-serif", 
+                    fontWeight: 700,
+                    letterSpacing: 0.2,
+                  }}
                 >
                   {copy.heading}
                 </Typography>
@@ -213,9 +218,9 @@ function App() {
                   }
                   className="px-2 py-1 rounded border text-xs font-semibold"
                   style={{
-                    borderColor: "#e5b700",
-                    backgroundColor: "#fff",
-                    color: "#000",
+                    borderColor: "#e8dd7a",
+                    backgroundColor: "rgba(255,255,255,0.9)",
+                    color: "#1a1a1a",
                   }}
                 >
                   {lang === "ua" ? "EN" : "UA"}
@@ -225,9 +230,9 @@ function App() {
                   onClick={() => setIsCollapsed((prev) => !prev)}
                   className="px-2 py-1 rounded border text-xs font-semibold flex items-center gap-1"
                   style={{
-                    borderColor: "#e5b700",
-                    backgroundColor: "#fff",
-                    color: "#000",
+                    borderColor: "#e8dd7a",
+                    backgroundColor: "rgba(255,255,255,0.9)",
+                    color: "#1a1a1a",
                   }}
                 >
                   <span>{isCollapsed ? "▸" : "▾"}</span>
@@ -267,19 +272,19 @@ function App() {
         </Box>
 
         {/* App Bar */}
-        <AppBar 
-          position="static" 
+        <AppBar
+          position="static"
           elevation={0}
-          sx={{ 
+          sx={{
             background: "transparent",
             color: "white",
           }}
         >
           <Toolbar sx={{ justifyContent: "center", py: 2 }}>
-            <Typography 
-              variant="h3" 
-              component="h1" 
-              sx={{ 
+            <Typography
+              variant="h3"
+              component="h1"
+              sx={{
                 fontFamily: '"Fredoka", sans-serif',
                 fontWeight: 600,
                 fontSize: { xs: "2rem", sm: "2.5rem" },
