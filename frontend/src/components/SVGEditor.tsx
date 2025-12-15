@@ -368,7 +368,6 @@ export default function SVGEditor({ svg, onSvgChange, onClose }: SVGEditorProps)
 
     // Calculate display dimensions maintaining aspect ratio
     const { width: vbWidth, height: vbHeight } = svgDimensions;
-    const aspectRatio = vbWidth / vbHeight;
     const currentZoom = zoom ?? 100;
 
     // final scale = fitScale * zoom%
