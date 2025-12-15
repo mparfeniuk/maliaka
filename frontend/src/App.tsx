@@ -180,41 +180,10 @@ function App() {
       }}
     >
       <Container maxWidth="sm" sx={{ px: 2, pt: 2 }}>
-        {/* App Bar */}
-        <AppBar 
-          position="static" 
-          elevation={0}
-          sx={{ 
-            background: "transparent",
-            color: "white",
-          }}
-        >
-          <Toolbar sx={{ justifyContent: "center", py: 2 }}>
-            <Typography 
-              variant="h3" 
-              component="h1" 
-              sx={{ 
-                fontFamily: '"Fredoka", sans-serif',
-                fontWeight: 600,
-                fontSize: { xs: "2rem", sm: "2.5rem" },
-                letterSpacing: "0.02em",
-                textShadow: "2px 2px 4px rgba(0,0,0,0.2)",
-                background: "linear-gradient(45deg, #FFD54F, #FFAB91, #F48FB1)",
-                backgroundClip: "text",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}
-            >
-              Maliaka ✨
-            </Typography>
-          </Toolbar>
-        </AppBar>
-
-        {/* Marathon disclaimer banner directly under title */}
+        {/* Marathon disclaimer banner above title */}
         <Box
           sx={{
-            mt: 1,
-            mb: 2,
+            mb: 1.5,
             fontFamily: "Arial, sans-serif",
           }}
         >
@@ -296,6 +265,36 @@ function App() {
             )}
           </div>
         </Box>
+
+        {/* App Bar */}
+        <AppBar 
+          position="static" 
+          elevation={0}
+          sx={{ 
+            background: "transparent",
+            color: "white",
+          }}
+        >
+          <Toolbar sx={{ justifyContent: "center", py: 2 }}>
+            <Typography 
+              variant="h3" 
+              component="h1" 
+              sx={{ 
+                fontFamily: '"Fredoka", sans-serif',
+                fontWeight: 600,
+                fontSize: { xs: "2rem", sm: "2.5rem" },
+                letterSpacing: "0.02em",
+                textShadow: "2px 2px 4px rgba(0,0,0,0.2)",
+                background: "linear-gradient(45deg, #FFD54F, #FFAB91, #F48FB1)",
+                backgroundClip: "text",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+              }}
+            >
+              Maliaka ✨
+            </Typography>
+          </Toolbar>
+        </AppBar>
 
         {/* Subtitle */}
         <Typography
