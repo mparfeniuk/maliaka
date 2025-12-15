@@ -21,6 +21,7 @@ import SelectAllIcon from '@mui/icons-material/SelectAll';
 import FlipCameraAndroidIcon from '@mui/icons-material/FlipCameraAndroid';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
+import FitScreenIcon from '@mui/icons-material/FitScreen';
 import CheckIcon from '@mui/icons-material/Check';
 import ClearIcon from '@mui/icons-material/Clear';
 
@@ -75,27 +76,53 @@ export default function SVGEditor({ svg, onSvgChange, onClose }: SVGEditorProps)
   const [selectedSubpaths, setSelectedSubpaths] = useState<Set<string>>(new Set());
   const [history, setHistory] = useState<string[]>([svg]);
   const [historyIndex, setHistoryIndex] = useState(0);
-  const [zoom, setZoom] = useState(100);
+  const [zoom, setZoom] = useState<number | null>(null); // null = not initialized yet
   const [hoveredSubpath, setHoveredSubpath] = useState<string | null>(null);
   const [viewBox, setViewBox] = useState<string>('0 0 100 100');
+  const [svgDimensions, setSvgDimensions] = useState({ width: 100, height: 100 });
+
+  // Canvas inner size (approx, considering padding)
+  const CANVAS_MAX_WIDTH = 480;
+  const CANVAS_MAX_HEIGHT = 360;
+
+  const [fitScale, setFitScale] = useState(1); // scale that fits SVG into canvas
+
+  // Recalculate fit scale whenever SVG size changes
+  useEffect(() => {
+    const { width: vbWidth, height: vbHeight } = svgDimensions;
+    if (vbWidth === 0 || vbHeight === 0) return;
+
+    const scaleBase = Math.min(CANVAS_MAX_WIDTH / vbWidth, CANVAS_MAX_HEIGHT / vbHeight);
+    setFitScale(scaleBase);
+  }, [svgDimensions]);
+
+  // Fit to view function (reset zoom to 100% of fit scale)
+  const fitToView = useCallback(() => {
+    setZoom(100);
+  }, []);
 
   // Parse SVG and extract subpaths
   useEffect(() => {
     const currentSvg = history[historyIndex];
     
     // Extract viewBox or width/height
+    let svgW = 100, svgH = 100;
     const viewBoxMatch = currentSvg.match(/viewBox=["']([^"']+)["']/i);
     if (viewBoxMatch) {
       setViewBox(viewBoxMatch[1]);
+      const parts = viewBoxMatch[1].split(/\s+/).map(Number);
+      svgW = parts[2] || 100;
+      svgH = parts[3] || 100;
     } else {
       const widthMatch = currentSvg.match(/width=["']([^"']+)["']/i);
       const heightMatch = currentSvg.match(/height=["']([^"']+)["']/i);
       if (widthMatch && heightMatch) {
-        const w = parseFloat(widthMatch[1]) || 100;
-        const h = parseFloat(heightMatch[1]) || 100;
-        setViewBox(`0 0 ${w} ${h}`);
+        svgW = parseFloat(widthMatch[1]) || 100;
+        svgH = parseFloat(heightMatch[1]) || 100;
+        setViewBox(`0 0 ${svgW} ${svgH}`);
       }
     }
+    setSvgDimensions({ width: svgW, height: svgH });
     
     // Extract all path elements
     const pathRegex = /<path[^>]*\/?>/gi;
@@ -228,6 +255,13 @@ export default function SVGEditor({ svg, onSvgChange, onClose }: SVGEditorProps)
     onClose();
   }, [history, historyIndex, onSvgChange, onClose]);
 
+  // Initialize zoom when container is ready (fit to view)
+  useEffect(() => {
+    if (zoom === null && containerRef.current && svgDimensions.width > 0) {
+      setZoom(100); // 100% of fitScale
+    }
+  }, [zoom, svgDimensions]);
+
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -252,7 +286,75 @@ export default function SVGEditor({ svg, onSvgChange, onClose }: SVGEditorProps)
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [deleteSelected, selectAll, undo, redo, clearSelection]);
 
-  // Interactive SVG
+  // Handle wheel zoom with non-passive listener
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? -15 : 15;
+        setZoom(z => Math.max(25, Math.min(300, (z ?? 100) + delta)));
+      }
+    };
+
+    container.addEventListener('wheel', handleWheel, { passive: false });
+    return () => container.removeEventListener('wheel', handleWheel);
+  }, []);
+
+  // Handle pinch-to-zoom on touch devices
+  const lastTouchDistance = useRef<number | null>(null);
+  
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const getTouchDistance = (touches: TouchList): number => {
+      if (touches.length < 2) return 0;
+      const dx = touches[0].clientX - touches[1].clientX;
+      const dy = touches[0].clientY - touches[1].clientY;
+      return Math.sqrt(dx * dx + dy * dy);
+    };
+
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        e.preventDefault();
+        lastTouchDistance.current = getTouchDistance(e.touches);
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length === 2 && lastTouchDistance.current !== null) {
+        e.preventDefault();
+        const currentDistance = getTouchDistance(e.touches);
+        const delta = currentDistance - lastTouchDistance.current;
+        
+        // Scale zoom based on pinch movement
+        if (Math.abs(delta) > 5) {
+          const zoomDelta = delta > 0 ? 10 : -10;
+          setZoom(z => Math.max(25, Math.min(300, (z ?? 100) + zoomDelta)));
+          lastTouchDistance.current = currentDistance;
+        }
+      }
+    };
+
+    const handleTouchEnd = () => {
+      lastTouchDistance.current = null;
+    };
+
+    container.addEventListener('touchstart', handleTouchStart, { passive: false });
+    container.addEventListener('touchmove', handleTouchMove, { passive: false });
+    container.addEventListener('touchend', handleTouchEnd, { passive: true });
+
+    return () => {
+      container.removeEventListener('touchstart', handleTouchStart);
+      container.removeEventListener('touchmove', handleTouchMove);
+      container.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, []);
+
+  // Interactive SVG - zoom is applied directly to SVG dimensions
   const interactiveSvg = useMemo(() => {
     if (subpaths.length === 0) {
       return (
@@ -264,13 +366,23 @@ export default function SVGEditor({ svg, onSvgChange, onClose }: SVGEditorProps)
       );
     }
 
-    const vbParts = viewBox.split(' ').map(Number);
-    const svgWidth = vbParts[2] || 400;
-    const svgHeight = vbParts[3] || 400;
+    // Calculate display dimensions maintaining aspect ratio
+    const { width: vbWidth, height: vbHeight } = svgDimensions;
+    const aspectRatio = vbWidth / vbHeight;
+    const currentZoom = zoom ?? 100;
+
+    // final scale = fitScale * zoom%
+    const finalScale = fitScale * (currentZoom / 100);
+
+    const displayWidth = vbWidth * finalScale;
+    const displayHeight = vbHeight * finalScale;
 
     const pathElements = subpaths.map(subpath => {
       const isSelected = selectedSubpaths.has(subpath.id);
       const isHovered = hoveredSubpath === subpath.id;
+      
+      // Calculate stroke width relative to viewBox size for consistent appearance
+      const strokeWidth = Math.max(vbWidth, vbHeight) * 0.003;
       
       return (
         <path
@@ -278,7 +390,7 @@ export default function SVGEditor({ svg, onSvgChange, onClose }: SVGEditorProps)
           d={subpath.d}
           fill={isSelected ? '#EF4444' : isHovered ? '#F97316' : subpath.fill}
           stroke={isSelected ? '#DC2626' : isHovered ? '#EA580C' : 'none'}
-          strokeWidth={isSelected || isHovered ? 2 : 0}
+          strokeWidth={isSelected || isHovered ? strokeWidth : 0}
           style={{
             cursor: 'pointer',
             transition: 'fill 0.15s, stroke 0.15s',
@@ -297,15 +409,18 @@ export default function SVGEditor({ svg, onSvgChange, onClose }: SVGEditorProps)
     return (
       <svg
         viewBox={viewBox}
-        width={svgWidth}
-        height={svgHeight}
-        style={{ display: 'block', maxWidth: '100%', maxHeight: '100%' }}
+        width={displayWidth}
+        height={displayHeight}
+        style={{ 
+          display: 'block',
+          transition: 'width 0.1s, height 0.1s',
+        }}
         onClick={() => clearSelection()}
       >
         {pathElements}
       </svg>
     );
-  }, [subpaths, selectedSubpaths, hoveredSubpath, viewBox, toggleSelection, clearSelection]);
+  }, [subpaths, selectedSubpaths, hoveredSubpath, viewBox, svgDimensions, zoom, toggleSelection, clearSelection]);
 
   return (
     <Dialog 
@@ -382,15 +497,55 @@ export default function SVGEditor({ svg, onSvgChange, onClose }: SVGEditorProps)
 
           <Divider orientation="vertical" flexItem />
 
-          {/* Zoom */}
-          <IconButton onClick={() => setZoom(z => Math.max(25, z - 25))} size="small">
-            <ZoomOutIcon fontSize="small" />
+          {/* Zoom - larger buttons for mobile */}
+          <IconButton 
+            onClick={() => setZoom(z => Math.max(25, (z ?? 100) - 25))} 
+            size="medium"
+            sx={{ 
+              bgcolor: 'grey.200', 
+              '&:hover': { bgcolor: 'grey.300' },
+              minWidth: 44,
+              minHeight: 44,
+            }}
+          >
+            <ZoomOutIcon />
           </IconButton>
-          <Typography variant="caption" sx={{ minWidth: 40, textAlign: 'center' }}>
-            {zoom}%
+          <Tooltip title="Вмістити">
+            <IconButton 
+              onClick={fitToView} 
+              size="medium"
+              sx={{ 
+                bgcolor: 'primary.100', 
+                '&:hover': { bgcolor: 'primary.200' },
+                minWidth: 44,
+                minHeight: 44,
+              }}
+            >
+              <FitScreenIcon />
+            </IconButton>
+          </Tooltip>
+          <Typography 
+            variant="body2" 
+            sx={{ 
+              minWidth: 50, 
+              textAlign: 'center', 
+              fontWeight: 600,
+              px: 1,
+            }}
+          >
+            {zoom ?? '--'}%
           </Typography>
-          <IconButton onClick={() => setZoom(z => Math.min(400, z + 25))} size="small">
-            <ZoomInIcon fontSize="small" />
+          <IconButton 
+            onClick={() => setZoom(z => Math.min(300, (z ?? 100) + 25))} 
+            size="medium"
+            sx={{ 
+              bgcolor: 'grey.200', 
+              '&:hover': { bgcolor: 'grey.300' },
+              minWidth: 44,
+              minHeight: 44,
+            }}
+          >
+            <ZoomInIcon />
           </IconButton>
 
           {/* Status */}
@@ -409,44 +564,42 @@ export default function SVGEditor({ svg, onSvgChange, onClose }: SVGEditorProps)
           />
         </Stack>
 
-        {/* Canvas */}
+        {/* Canvas - fixed size container with scrollable SVG inside */}
         <Box
           ref={containerRef}
           sx={{
             flex: 1,
-            overflow: 'auto',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
             bgcolor: 'grey.100',
             borderRadius: 3,
             p: 2,
             minHeight: 300,
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='0' y='0' width='10' height='10' fill='%23f0f0f0'/%3E%3Crect x='10' y='10' width='10' height='10' fill='%23f0f0f0'/%3E%3C/svg%3E")`,
-          }}
-          onWheel={(e) => {
-            if (e.ctrlKey || e.metaKey) {
-              e.preventDefault();
-              const delta = e.deltaY > 0 ? -25 : 25;
-              setZoom(z => Math.max(25, Math.min(400, z + delta)));
-            }
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='0' y='0' width='10' height='10' fill='%23e8e8e8'/%3E%3Crect x='10' y='10' width='10' height='10' fill='%23e8e8e8'/%3E%3C/svg%3E")`,
+            // Allow pinch-to-zoom and prevent browser default behavior
+            touchAction: 'pan-x pan-y',
           }}
         >
-          <Box 
-            sx={{ 
-              display: 'flex', 
-              justifyContent: 'center', 
-              alignItems: 'flex-start',
-              minHeight: '100%',
+          {/* Fixed size white canvas with scrollable content */}
+          <Box
+            sx={{
+              width: '100%',
+              maxWidth: 500,
+              height: 400,
+              bgcolor: 'white',
+              borderRadius: 2,
+              boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+              border: '1px solid',
+              borderColor: 'grey.300',
+              overflow: 'auto',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
             }}
           >
-            <Box
-              sx={{
-                transform: `scale(${zoom / 100})`,
-                transformOrigin: 'top center',
-                bgcolor: 'white',
-                borderRadius: 2,
-                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                p: 2,
-              }}
-            >
+            {/* SVG - size controlled by zoom */}
+            <Box sx={{ p: 2 }}>
               {interactiveSvg}
             </Box>
           </Box>
@@ -454,7 +607,7 @@ export default function SVGEditor({ svg, onSvgChange, onClose }: SVGEditorProps)
 
         {/* Help */}
         <Typography variant="caption" color="text.secondary" sx={{ mt: 2 }}>
-          💡 Клікніть на елемент щоб виділити. Shift+клік для множинного виділення. Ctrl+колесо для зуму.
+          💡 Клікніть на елемент щоб виділити. Shift+клік для множинного виділення. 📱 Pinch для зуму.
         </Typography>
       </DialogContent>
 
