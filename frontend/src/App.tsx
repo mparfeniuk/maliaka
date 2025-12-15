@@ -210,9 +210,10 @@ function App() {
           </Toolbar>
         </AppBar>
 
-        {/* Marathon disclaimer banner */}
+        {/* Marathon disclaimer banner directly under title */}
         <Box
           sx={{
+            mt: 1,
             mb: 2,
             fontFamily: "Arial, sans-serif",
           }}
