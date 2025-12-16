@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { useMediaQuery, useTheme } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import WebApp from '@twa-dev/sdk';
 import {
@@ -24,6 +25,8 @@ export default function Upload({ onUpload, error }: UploadProps) {
   const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -90,45 +93,46 @@ export default function Upload({ onUpload, error }: UploadProps) {
           accept="image/jpeg,image/jpg,image/png,image/webp"
           onChange={handleFileSelect}
           style={{ display: 'none' }}
-          capture="environment"
         />
 
-        {/* Drop zone */}
-        <Box
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          onClick={handleButtonClick}
-          sx={{
-            border: '2px dashed',
-            borderColor: isDragOver ? 'primary.main' : 'divider',
-            borderRadius: 4,
-            p: 4,
-            mb: 3,
-            textAlign: 'center',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
-            bgcolor: isDragOver ? alpha('#6750A4', 0.05) : 'transparent',
-            '&:hover': {
-              borderColor: 'primary.main',
-              bgcolor: alpha('#6750A4', 0.03),
-            },
-          }}
-        >
-          <ImageIcon 
-            sx={{ 
-              fontSize: 48, 
-              color: isDragOver ? 'primary.main' : 'text.disabled',
-              mb: 2,
-            }} 
-          />
-          <Typography variant="body1" color="text.secondary">
-            Перетягніть зображення сюди
-          </Typography>
-          <Typography variant="body2" color="text.disabled" sx={{ mt: 0.5 }}>
-            або натисніть щоб вибрати
-          </Typography>
-        </Box>
+        {/* Drop zone - hide on mobile to show only Choose Image */}
+        {!isMobile && (
+          <Box
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            onClick={handleButtonClick}
+            sx={{
+              border: '2px dashed',
+              borderColor: isDragOver ? 'primary.main' : 'divider',
+              borderRadius: 4,
+              p: 4,
+              mb: 3,
+              textAlign: 'center',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              bgcolor: isDragOver ? alpha('#6750A4', 0.05) : 'transparent',
+              '&:hover': {
+                borderColor: 'primary.main',
+                bgcolor: alpha('#6750A4', 0.03),
+              },
+            }}
+          >
+            <ImageIcon 
+              sx={{ 
+                fontSize: 48, 
+                color: isDragOver ? 'primary.main' : 'text.disabled',
+                mb: 2,
+              }} 
+            />
+            <Typography variant="body1" color="text.secondary">
+              Перетягніть зображення сюди
+            </Typography>
+            <Typography variant="body2" color="text.disabled" sx={{ mt: 0.5 }}>
+              або натисніть щоб вибрати
+            </Typography>
+          </Box>
+        )}
 
         {/* Action buttons */}
         <Stack spacing={2}>
